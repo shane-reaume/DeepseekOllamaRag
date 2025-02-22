@@ -114,11 +114,15 @@ if uploaded_file is not None:
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
     # Define the LLM and the prompt
-    llm = Ollama(model="deepseek-r1:1.5b")
+    llm = Ollama(
+        model="deepseek-coder-v2:16b",
+        base_url="http://192.168.0.54:11434"
+    )
     prompt = """
     1. Use the following pieces of context to answer the question at the end.
     2. If you don't know the answer, just say that "I don't know" but don't make up an answer on your own.\n
-    3. Keep the answer crisp and limited to 3,4 sentences.
+    3. You are a helpful assistant that uses dialog that improves the users memory and understanding of the context in under 500 words.
+    4. You convert abstract concepts into vivid spatial narratives when explaining the context as needed.
     Context: {context}
     Question: {question}
     Helpful Answer:"""
