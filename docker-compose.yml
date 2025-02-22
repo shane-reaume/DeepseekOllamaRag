@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./pdf:/app/pdf
+    environment:
+      - OLLAMA_HOST=http://192.168.0.54:11434  # Change this to your Ollama server address
+      - OLLAMA_MODEL=mistral  # Change to your preferred model
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  ollama_data:
