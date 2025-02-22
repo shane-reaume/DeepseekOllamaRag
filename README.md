@@ -89,20 +89,22 @@ pip install -r requirements.txt
 
 ### 4. Configure Ollama Settings
 
-The application can use either a local or remote Ollama instance. By default, it uses local, but you can modify `app.py` to use a remote instance:
+The application uses a configuration system to manage Ollama settings:
 
-```python
-llm = Ollama(
-    model="deepseek-coder-v2:16b",  # Change to your preferred model
-    base_url="http://your.ollama.server:11434"  # Change to your Ollama server
-)
+1. Copy the template configuration:
+```bash
+cp config.template.py config.py
 ```
 
-Available models depend on what you've pulled to your Ollama instance. Some options include:
+2. Edit `config.py` with your settings:
+```python
+OLLAMA_CONFIG = {
+    "model": "your-preferred-model",
+    "base_url": "http://your.ollama.server:11434"
+}
+```
 
-- deepseek-coder-v2:16b
-- dolphin-mixtral:8x7b
-- deepseek-r1:1.5b
+Note: `config.py` is ignored by git to keep your local settings private.
 
 ### 5. PDF Document Management
 

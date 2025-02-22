@@ -8,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains import RetrievalQA
+from utils.config_loader import OLLAMA_CONFIG
 
 # Define color palette with improved contrast
 primary_color = "#007BFF"  # Bright blue for primary buttons
@@ -69,6 +70,21 @@ st.markdown("""
 # App title
 st.title("📄 Build a RAG System with DeepSeek R1 & Ollama")
 
+# Add near the top of the file, after imports
+def get_model_name(llm):
+    """Extract readable model name from Ollama config"""
+    return llm.model if hasattr(llm, 'model') else 'Unknown'
+
+def get_ollama_host(llm):
+    """Extract host from Ollama config"""
+    return llm.base_url if hasattr(llm, 'base_url') else 'localhost:11434'
+
+# Define the LLM before the sidebar
+llm = Ollama(
+    model=OLLAMA_CONFIG["model"],
+    base_url=OLLAMA_CONFIG["base_url"]
+)
+
 # Sidebar for instructions and settings
 with st.sidebar:
     st.header("Instructions")
@@ -79,10 +95,11 @@ with st.sidebar:
     """)
 
     st.header("Settings")
-    st.markdown("""
+    st.markdown(f"""
     - **Embedding Model**: HuggingFace
     - **Retriever Type**: Similarity Search
-    - **LLM**: DeepSeek R1 (Ollama)
+    - **LLM Model**: {get_model_name(llm)}
+    - **Ollama Host**: {get_ollama_host(llm)}
     """)
 
 # Main file uploader section
@@ -114,10 +131,6 @@ if uploaded_file is not None:
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
     # Define the LLM and the prompt
-    llm = Ollama(
-        model="deepseek-coder-v2:16b",
-        base_url="http://192.168.0.54:11434"
-    )
     prompt = """
     1. Use the following pieces of context to answer the question at the end.
     2. If you don't know the answer, just say that "I don't know" but don't make up an answer on your own.\n
