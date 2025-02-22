@@ -1,13 +1,12 @@
 import streamlit as st
 from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 from langchain.prompts import PromptTemplate
-from langchain.chains.llm import LLMChain
-from langchain.chains.combine_documents.stuff import StuffDocumentsChain
-from langchain.chains import RetrievalQA
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
 from utils.config_loader import OLLAMA_CONFIG
 
 # Define color palette with improved contrast
@@ -68,7 +67,7 @@ st.markdown("""
 
 
 # App title
-st.title("📄 Build a RAG System with DeepSeek R1 & Ollama")
+st.title("📄 Build a RAG System with Ollama")
 
 # Add near the top of the file, after imports
 def get_model_name(llm):
@@ -80,7 +79,7 @@ def get_ollama_host(llm):
     return llm.base_url if hasattr(llm, 'base_url') else 'localhost:11434'
 
 # Define the LLM before the sidebar
-llm = Ollama(
+llm = OllamaLLM(
     model=OLLAMA_CONFIG["model"],
     base_url=OLLAMA_CONFIG["base_url"]
 )
@@ -119,46 +118,37 @@ if uploaded_file is not None:
 
     # Split the document into chunks
     st.subheader("📚 Splitting the document into chunks...")
-    text_splitter = SemanticChunker(HuggingFaceEmbeddings())
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    text_splitter = SemanticChunker(embeddings)
     documents = text_splitter.split_documents(docs)
-
-    # Instantiate the embedding model
-    embedder = HuggingFaceEmbeddings()
 
     # Create vector store and retriever
     st.subheader("🔍 Creating embeddings and setting up the retriever...")
-    vector = FAISS.from_documents(documents, embedder)
+    vector = FAISS.from_documents(documents, embeddings)
     retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
-    # Define the LLM and the prompt
-    prompt = """
+    # Define the prompt
+    prompt = PromptTemplate.from_template("""
     1. Use the following pieces of context to answer the question at the end.
     2. If you don't know the answer, just say that "I don't know" but don't make up an answer on your own.\n
     3. You are a helpful assistant that uses dialog that improves the users memory and understanding of the context in under 500 words.
     4. You convert abstract concepts into vivid spatial narratives when explaining the context as needed.
     Context: {context}
-    Question: {question}
-    Helpful Answer:"""
-    QA_CHAIN_PROMPT = PromptTemplate.from_template(prompt)
+    Question: {input}
+    Helpful Answer:""")  # Changed {question} to {input}
 
-    # Define the document and combination chains
-    llm_chain = LLMChain(llm=llm, prompt=QA_CHAIN_PROMPT, verbose=True)
-    document_prompt = PromptTemplate(
-        input_variables=["page_content", "source"],
-        template="Context:\ncontent:{page_content}\nsource:{source}",
-    )
-    combine_documents_chain = StuffDocumentsChain(
-        llm_chain=llm_chain,
-        document_variable_name="context",
-        document_prompt=document_prompt,
-        verbose=True
+    # Create the chain using modern patterns
+    document_chain = create_stuff_documents_chain(
+        llm=llm,
+        prompt=prompt,
+        document_variable_name="context"
     )
 
-    qa = RetrievalQA(
-        combine_documents_chain=combine_documents_chain,
-        retriever=retriever,
-        verbose=True,
-        return_source_documents=True
+    qa_chain = create_retrieval_chain(
+        retriever,
+        document_chain
     )
 
     # Question input and response display
@@ -168,9 +158,9 @@ if uploaded_file is not None:
     if user_input:
         with st.spinner("Processing your query..."):
             try:
-                response = qa(user_input)["result"]
+                response = qa_chain.invoke({"input": user_input})
                 st.success("✅ Response:")
-                st.write(response)
+                st.write(response["answer"])
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 else:

@@ -3,6 +3,7 @@ version: '3.8'
 services:
   app:
     build: .
+    container_name: ollama-rag-app
     ports:
       - "8501:8501"
     volumes:
@@ -10,6 +11,14 @@ services:
     environment:
       - OLLAMA_HOST=http://192.168.0.54:11434  # Change this to your Ollama server address
       - OLLAMA_MODEL=mistral  # Change to your preferred model
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
       interval: 30s

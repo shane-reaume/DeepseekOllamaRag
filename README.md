@@ -1,6 +1,8 @@
-# Ollama RAG System
+# Private Ollama RAG System
 
 A Retrieval-Augmented Generation (RAG) system using LLM Models running locally through Ollama, with a Streamlit interface for PDF document Q&A.
+
+![Private Ollama RAG System](./privateOllamaRAGsystem.png)
 
 ## Overview
 
@@ -334,3 +336,56 @@ The application uses two Docker volumes:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Architecture Components
+
+### HuggingFace Integration
+
+The application uses HuggingFace for two key components:
+
+1. **Text Embeddings**
+   - Uses `sentence-transformers` for document embeddings
+   - Default model: `all-MiniLM-L6-v2`
+   - Processes text chunks locally without API calls
+   - Optimized for semantic search
+
+2. **Semantic Chunking**
+   - Uses `HuggingFaceEmbeddings` for intelligent text splitting
+   - Maintains context coherence in chunks
+   - Improves retrieval quality
+   - Runs entirely locally
+
+#### Memory Usage
+The embedding process can be memory-intensive:
+- Loads model into memory (~1GB)
+- Processes documents in batches
+- Caches embeddings for performance
+
+#### Configuration
+No API key required as it runs locally. The system uses:
+```python
+from langchain_community.embeddings import HuggingFaceEmbeddings
+embedder = HuggingFaceEmbeddings()
+```
+
+## Docker Configuration
+
+### Resource Management
+
+The Docker container is configured with resource limits to prevent system overload:
+
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: '4'      # Maximum CPU cores
+      memory: 8G     # Maximum memory
+    reservations:
+      cpus: '2'      # Minimum CPU cores
+      memory: 4G     # Minimum memory
+```
+
+Adjust these values based on your system capabilities:
+- For 8GB RAM systems: Use 4G limit, 2G reservation
+- For 16GB RAM systems: Use 8G limit, 4G reservation
+- For 32GB RAM systems: Use 16G limit, 8G reservation
