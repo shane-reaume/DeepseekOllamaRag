@@ -19,7 +19,7 @@ This project implements a local RAG system that allows users to:
 
 - 8GB RAM
 - 10GB free disk space
-- Python 3.9+
+- Python 3.12.3 (tested, other 3.x versions may work)
 
 ### Recommended
 
@@ -85,6 +85,42 @@ Install required packages
 
 ```bash
 pip install -r requirements.txt
+```
+
+### 4. Configure Ollama Settings
+
+The application can use either a local or remote Ollama instance. By default, it uses local, but you can modify `app.py` to use a remote instance:
+
+```python
+llm = Ollama(
+    model="deepseek-coder-v2:16b",  # Change to your preferred model
+    base_url="http://your.ollama.server:11434"  # Change to your Ollama server
+)
+```
+
+Available models depend on what you've pulled to your Ollama instance. Some options include:
+
+- deepseek-coder-v2:16b
+- dolphin-mixtral:8x7b
+- deepseek-r1:1.5b
+
+### 5. PDF Document Management
+
+The application uses two locations for PDF files:
+
+- `/pdf/` directory: Store your permanent PDF collection here
+- `temp.pdf`: Working file in root directory (auto-generated when uploading)
+
+When you upload a PDF through the UI:
+
+1. The file is temporarily saved as `temp.pdf` in the root directory
+2. This file is processed for the current session
+3. The original PDFs in `/pdf/` remain unchanged
+
+Note: Add this to your `.gitignore` to prevent PDFs from being committed:
+
+```bash
+*.pdf
 ```
 
 ## Running the Application
