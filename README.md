@@ -1,5 +1,7 @@
 # DocuRAG: AI Powered PDF Q&A
 
+![Private RAG System](./privateOllamaRAGsystem.png)
+
 ## Overview
 
 DocuRAG is a lightweight secure Retrieval-Augmented Generation (RAG) implementation for PDF-based question answering that leverages key Langchain components alongside modern AI stacks. It ingests PDFs via PDFPlumberLoader and uses semantic chunking powered by HuggingFace embeddings to generate context-aware document fragments. These fragments are embedded into a FAISS vector store for efficient similarity-based retrieval. The setup then employs a straightforward “stuffing” approach—directly combining retrieved context into a prompt for an LLM from Ollama.
