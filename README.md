@@ -1,52 +1,34 @@
-# DeepSeek Ollama RAG System
-
-A Retrieval-Augmented Generation (RAG) system using DeepSeek R1 running locally through Ollama, with a Streamlit interface for PDF document Q&A.
+# DocuRAG: AI Powered PDF Q&A
 
 ## Overview
 
-Original Tutorial: [Setting up Ollama & Running DeepSeek R1 Locally for a Powerful RAG System](https://dev.to/ajmal_hasan/setting-up-ollama-running-deepseek-r1-locally-for-a-powerful-rag-system-4pd4)
+DocuRAG is a lightweight secure Retrieval-Augmented Generation (RAG) implementation for PDF-based question answering that leverages key Langchain components alongside modern AI stacks. It ingests PDFs via PDFPlumberLoader and uses semantic chunking powered by HuggingFace embeddings to generate context-aware document fragments. These fragments are embedded into a FAISS vector store for efficient similarity-based retrieval. The setup then employs a straightforward “stuffing” approach—directly combining retrieved context into a prompt for an LLM from Ollama.
 
-This project implements a local RAG system that allows users to:
+### Key Advantages:
 
-- Upload PDF documents
-- Ask questions about the documents
-- Get AI-generated answers using locally running DeepSeek R1 model
-- Process documents without sending data to external services
+Local Processing & Enhanced Security:
+By running entirely on local resources, DocuRAG ensures your sensitive documents never leave your machine. This reduces reliance on cloud services and minimizes data exposure, making it an ideal solution for environments where privacy and data security are paramount.
+
+Simplicity and Maintainability:
+The architecture is designed for moderate-sized documents, offering a simpler, more maintainable alternative to more complex production-grade RAG systems that rely on multiple distributed components or cloud-based APIs.
+
+Efficient and Cost-Effective:
+Leveraging powerful, instruction-tuned LLMs locally via Ollama and modern embedding techniques ensures fast, context-aware answers without the recurring costs and potential latency issues associated with cloud deployments.
+
+Cloned from this tutorial: [Setting up Ollama & Running DeepSeek R1 Locally for a Powerful RAG System](https://dev.to/ajmal_hasan/setting-up-ollama-running-deepseek-r1-locally-for-a-powerful-rag-system-4pd4)
 
 ## System Requirements
 
-### Minimum Requirements
-
-- 8GB RAM
-- 10GB free disk space
+- Linux, MacOS, Windows ( can run on one system or have Ollama on a second server )
 - Python 3.12.3 (tested, other 3.x versions may work)
-
-### Recommended
-
-- 16GB RAM
-- NVIDIA GPU with 4GB+ VRAM (for faster processing)
-- 20GB free disk space
 
 ## Installation Instructions
 
-```bash
-pyenv install 3.12.3
-pyenv local 3.12.3
-python -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
 ### 1. Install Ollama
 
-#### Linux
+This can be installed on the computer you are developing on or a remote host and point your config.py `base_url` to that endpoint. You might host Ollama on a more powerful server so you can run larger models for example.
 
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-#### macOS
+#### Linux / MacOS
 
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -54,17 +36,29 @@ curl -fsSL https://ollama.com/install.sh | sh
 
 #### Windows
 
+##### WSL
+
 1. Install Windows Subsystem for Linux (WSL2)
 2. Follow Linux installation instructions within WSL2
-   - Or download from [Ollama Windows](https://ollama.com/download/windows)
 
-### 2. Pull DeepSeek Model
+##### Installer
+
+download from [Ollama Windows](https://ollama.com/download/windows)
+
+### 2. Pull Ollama Model ( on Ollama host )
 
 ```bash
     ollama pull deepseek-r1:1.5b
 ```
 
 ### 3. Setup Python Environment
+
+Setup python 3.12.3 ( or try other versions at your own risk ). Use whatever you like, but pyenv bellow is a good option.
+
+```bash
+pyenv install 3.12.3
+pyenv local 3.12.3
+```
 
 #### Create Virtual Environment
 
@@ -93,6 +87,7 @@ On Windows:
 Install required packages
 
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
@@ -100,7 +95,7 @@ pip install -r requirements.txt
 
 The application uses a configuration system to manage Ollama settings:
 
-1. Copy the template configuration:
+1. Copy the template configuration to the build ready `config.py`:
 ```bash
 cp config.template.py config.py
 ```
@@ -108,7 +103,7 @@ cp config.template.py config.py
 2. Edit `config.py` with your settings:
 ```python
 OLLAMA_CONFIG = {
-    "model": "your-preferred-model",
+    "model": "your-preferred-model", # has to be installed on your Ollama server
     "base_url": "http://your.ollama.server:11434"
 }
 ```
@@ -127,12 +122,6 @@ When you upload a PDF through the UI:
 1. The file is temporarily saved as `temp.pdf` in the root directory
 2. This file is processed for the current session
 3. The original PDFs in `/pdf/` remain unchanged
-
-Note: Add this to your `.gitignore` to prevent PDFs from being committed:
-
-```bash
-*.pdf
-```
 
 ## Running the Application
 
@@ -208,7 +197,7 @@ Note: Add this to your `.gitignore` to prevent PDFs from being committed:
 
 - [Original Tutorial](https://dev.to/ajmal_hasan/setting-up-ollama-running-deepseek-r1-locally-for-a-powerful-rag-system-4pd4)
 - [Ollama Documentation](https://ollama.com/docs)
-- [DeepSeek Model Information](https://ollama.com/library/deepseek)
+- [Model Information](https://ollama.com/library)
 - [Streamlit Documentation](https://docs.streamlit.io)
 
 ## License
